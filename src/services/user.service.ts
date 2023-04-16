@@ -1,6 +1,7 @@
 import prisma from "../utils/prisma";
 import jwt from "../utils/jwt";
 import { hash, compare } from "bcrypt";
+import { AppError, HttpCode } from "../exceptions/appError";
 
 interface LoginPayload {
   email: string;
@@ -23,13 +24,19 @@ const login = async (loginPayload: LoginPayload) => {
   });
 
   if (!user) {
-    throw new Error("User not found");
+    throw new AppError({
+      httpCode: HttpCode.NOT_FOUND,
+      description: "User not found",
+    });
   }
 
   const correctPassword = await compare(password, user.password);
 
   if (!correctPassword) {
-    throw new Error("Incorrect password");
+    throw new AppError({
+      httpCode: HttpCode.UNAUTHORIZED,
+      description: "Incorrect password",
+    });
   }
 
   Object.defineProperties(user, {
@@ -53,7 +60,10 @@ const register = async (registerPayload: RegisterPayload) => {
   });
 
   if (userExists) {
-    throw new Error("User already exists");
+    throw new AppError({
+      httpCode: HttpCode.BAD_REQUEST,
+      description: "User already exists",
+    });
   }
 
   const hashedPassword = await hash(password, 10);
@@ -77,7 +87,21 @@ const register = async (registerPayload: RegisterPayload) => {
   return { user, token };
 };
 
+const verifyToken = async (token: string | undefined) => {
+  if (!token) {
+    throw new AppError({
+      httpCode: HttpCode.UNAUTHORIZED,
+      description: "Token not provided",
+    });
+  }
+
+  const user = jwt.verifyToken(token);
+
+  return user;
+};
+
 export default {
   login,
   register,
+  verifyToken,
 };

@@ -12,4 +12,8 @@ userRouter.post("/register", (req: Request, res: Response) => {
   return userController.register(req, res);
 });
 
+userRouter.get("/verifyToken", (req: Request, res: Response) => {
+  return userController.verifyToken(req, res);
+});
+
 export default userRouter;

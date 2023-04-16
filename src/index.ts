@@ -3,8 +3,8 @@ import router from "./routes";
 import * as cors from "cors";
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 app.use(router);
-cors({ origin: true });
 
-app.listen(3000);
+app.listen(6000);
